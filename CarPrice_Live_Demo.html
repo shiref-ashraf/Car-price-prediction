@@ -1,0 +1,844 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>CarPrice AI — Live Inference Demo</title>
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Syne:wght@400;600;700;800&family=DM+Mono:wght@400;500&family=DM+Sans:wght@300;400;500&display=swap');
+
+    *,
+    *::before,
+    *::after {
+      box-sizing: border-box;
+      margin: 0;
+      padding: 0
+    }
+
+    :root {
+      --navy: #0d1b2a;
+      --blue: #1a5276;
+      --sky: #2e86c1;
+      --accent: #f39c12;
+      --green: #27ae60;
+      --red: #e74c3c;
+      --light: #ecf0f1;
+      --muted: #95a5a6;
+      --card: #152232;
+      --border: #1e3448
+    }
+
+    body {
+      font-family: 'DM Sans', sans-serif;
+      background: var(--navy);
+      color: var(--light);
+      min-height: 100vh
+    }
+
+    .header {
+      background: linear-gradient(135deg, #0d1b2a 0%, #1a3a5c 100%);
+      border-bottom: 2px solid var(--accent);
+      padding: 20px 32px 16px;
+      display: flex;
+      align-items: center;
+      gap: 16px
+    }
+
+    .header-icon {
+      font-size: 2.2rem
+    }
+
+    .header-title {
+      font-family: 'Syne', sans-serif;
+      font-size: 1.5rem;
+      font-weight: 800;
+      color: #fff
+    }
+
+    .header-sub {
+      font-size: .78rem;
+      color: var(--muted);
+      margin-top: 2px;
+      letter-spacing: .04em
+    }
+
+    .badge {
+      margin-left: auto;
+      background: rgba(243, 156, 18, .15);
+      border: 1px solid var(--accent);
+      color: var(--accent);
+      padding: 4px 12px;
+      border-radius: 20px;
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+      font-weight: 500
+    }
+
+    .metrics-row {
+      display: flex;
+      border-bottom: 1px solid var(--border);
+      background: #111e2d
+    }
+
+    .metric-cell {
+      flex: 1;
+      padding: 12px 16px;
+      text-align: center;
+      border-right: 1px solid var(--border)
+    }
+
+    .metric-cell:last-child {
+      border-right: none
+    }
+
+    .metric-label {
+      font-size: .65rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .08em
+    }
+
+    .metric-value {
+      font-family: 'DM Mono', monospace;
+      font-size: 1.05rem;
+      font-weight: 500;
+      color: var(--accent);
+      margin-top: 2px
+    }
+
+    .main {
+      display: flex;
+      gap: 0;
+      min-height: calc(100vh - 130px)
+    }
+
+    .panel-form {
+      width: 340px;
+      min-width: 300px;
+      background: var(--card);
+      border-right: 1px solid var(--border);
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto
+    }
+
+    .panel-title {
+      font-family: 'Syne', sans-serif;
+      font-size: .75rem;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: .1em;
+      color: var(--sky);
+      padding: 16px 20px 8px;
+      border-bottom: 1px solid var(--border)
+    }
+
+    .form-body {
+      padding: 16px 20px;
+      display: flex;
+      flex-direction: column;
+      gap: 12px
+    }
+
+    .field label {
+      display: block;
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 5px
+    }
+
+    .field select,
+    .field input[type=range] {
+      width: 100%;
+      background: #0d1b2a;
+      border: 1px solid var(--border);
+      color: var(--light);
+      border-radius: 6px;
+      font-size: .85rem;
+      font-family: 'DM Sans', sans-serif;
+      transition: border-color .2s
+    }
+
+    .field select {
+      padding: 7px 10px;
+      cursor: pointer
+    }
+
+    .field select:focus,
+    .field input:focus {
+      outline: none;
+      border-color: var(--sky)
+    }
+
+    .field select option {
+      background: #0d1b2a
+    }
+
+    .slider-wrap {
+      display: flex;
+      align-items: center;
+      gap: 10px
+    }
+
+    .field input[type=range] {
+      flex: 1;
+      height: 4px;
+      padding: 0;
+      cursor: pointer;
+      accent-color: var(--sky);
+      border: none
+    }
+
+    .slider-val {
+      font-family: 'DM Mono', monospace;
+      font-size: .78rem;
+      color: var(--accent);
+      min-width: 70px;
+      text-align: right
+    }
+
+    .preset-label {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 6px
+    }
+
+    .presets {
+      display: flex;
+      flex-wrap: wrap;
+      gap: 6px
+    }
+
+    .preset-btn {
+      background: #0d1b2a;
+      border: 1px solid var(--border);
+      color: var(--light);
+      border-radius: 5px;
+      padding: 5px 10px;
+      font-size: .73rem;
+      cursor: pointer;
+      transition: all .2s;
+      font-family: 'DM Sans', sans-serif
+    }
+
+    .preset-btn:hover {
+      border-color: var(--sky);
+      color: var(--sky)
+    }
+
+    .preset-btn.active {
+      border-color: var(--accent);
+      color: var(--accent);
+      background: rgba(243, 156, 18, .08)
+    }
+
+    .predict-btn {
+      width: 100%;
+      padding: 12px;
+      border: none;
+      border-radius: 8px;
+      background: linear-gradient(135deg, var(--sky), var(--blue));
+      color: #fff;
+      font-family: 'Syne', sans-serif;
+      font-size: .95rem;
+      font-weight: 700;
+      cursor: pointer;
+      transition: all .2s;
+      letter-spacing: .03em;
+      margin-top: 4px
+    }
+
+    .predict-btn:hover {
+      filter: brightness(1.15);
+      transform: translateY(-1px)
+    }
+
+    .predict-btn:active {
+      transform: translateY(0)
+    }
+
+    .predict-btn.loading {
+      opacity: .7;
+      cursor: wait
+    }
+
+    .panel-results {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      padding: 20px 24px;
+      gap: 16px
+    }
+
+    .price-card {
+      background: linear-gradient(135deg, #1a3a5c 0%, #0d2135 100%);
+      border: 1px solid var(--sky);
+      border-radius: 12px;
+      padding: 20px 24px;
+      display: flex;
+      align-items: center;
+      gap: 20px
+    }
+
+    .price-icon {
+      font-size: 2.4rem
+    }
+
+    .price-label {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .1em
+    }
+
+    .price-amount {
+      font-family: 'Syne', sans-serif;
+      font-size: 2.2rem;
+      font-weight: 800;
+      color: #fff;
+      margin: 2px 0
+    }
+
+    .price-sub {
+      font-size: .78rem;
+      color: var(--muted)
+    }
+
+    .price-badge {
+      margin-left: auto;
+      border-radius: 8px;
+      padding: 6px 14px;
+      font-family: 'DM Mono', monospace;
+      font-size: .8rem;
+      text-align: center;
+      white-space: nowrap
+    }
+
+    .range-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px
+    }
+
+    .range-title {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 10px
+    }
+
+    .range-bar-bg {
+      height: 8px;
+      background: #0d1b2a;
+      border-radius: 4px;
+      position: relative
+    }
+
+    .range-bar-fill {
+      height: 100%;
+      border-radius: 4px;
+      background: linear-gradient(90deg, var(--green), var(--sky), var(--accent))
+    }
+
+    .range-dot {
+      width: 14px;
+      height: 14px;
+      background: #fff;
+      border: 2px solid var(--accent);
+      border-radius: 50%;
+      position: absolute;
+      top: -3px;
+      transform: translateX(-50%)
+    }
+
+    .range-labels {
+      display: flex;
+      justify-content: space-between;
+      margin-top: 6px
+    }
+
+    .range-labels span {
+      font-family: 'DM Mono', monospace;
+      font-size: .68rem;
+      color: var(--muted)
+    }
+
+    .breakdown-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      padding: 16px 20px
+    }
+
+    .breakdown-title {
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      margin-bottom: 12px
+    }
+
+    .factor-row {
+      display: flex;
+      align-items: center;
+      gap: 10px;
+      margin-bottom: 4px
+    }
+
+    .factor-name {
+      font-size: .78rem;
+      width: 110px;
+      flex-shrink: 0
+    }
+
+    .factor-bar-bg {
+      flex: 1;
+      height: 6px;
+      background: #0d1b2a;
+      border-radius: 3px
+    }
+
+    .factor-bar-fill {
+      height: 100%;
+      border-radius: 3px
+    }
+
+    .factor-val {
+      font-family: 'DM Mono', monospace;
+      font-size: .72rem;
+      color: var(--muted);
+      min-width: 36px;
+      text-align: right
+    }
+
+    .history-card {
+      background: var(--card);
+      border: 1px solid var(--border);
+      border-radius: 10px;
+      overflow: hidden
+    }
+
+    .history-header {
+      padding: 12px 20px;
+      border-bottom: 1px solid var(--border);
+      font-size: .7rem;
+      color: var(--muted);
+      text-transform: uppercase;
+      letter-spacing: .07em;
+      display: flex;
+      justify-content: space-between;
+      align-items: center
+    }
+
+    .clear-btn {
+      font-size: .68rem;
+      color: var(--muted);
+      background: none;
+      border: 1px solid var(--border);
+      border-radius: 4px;
+      padding: 2px 8px;
+      cursor: pointer;
+      font-family: 'DM Sans', sans-serif;
+      transition: color .2s
+    }
+
+    .clear-btn:hover {
+      color: var(--red);
+      border-color: var(--red)
+    }
+
+    table {
+      width: 100%;
+      border-collapse: collapse
+    }
+
+    thead th {
+      padding: 8px 16px;
+      font-size: .68rem;
+      color: var(--muted);
+      text-align: left;
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      background: #0d1b2a;
+      border-bottom: 1px solid var(--border)
+    }
+
+    tbody tr {
+      border-bottom: 1px solid rgba(30, 52, 72, .5);
+      transition: background .15s
+    }
+
+    tbody tr:hover {
+      background: rgba(46, 134, 193, .07)
+    }
+
+    tbody td {
+      padding: 9px 16px;
+      font-size: .8rem
+    }
+
+    td.mono {
+      font-family: 'DM Mono', monospace
+    }
+
+    td.price-cell {
+      color: var(--accent);
+      font-family: 'DM Mono', monospace;
+      font-weight: 500
+    }
+
+    .placeholder {
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      color: var(--muted);
+      gap: 10px;
+      text-align: center;
+      padding: 40px;
+      min-height: 300px
+    }
+
+    .placeholder-icon {
+      font-size: 3rem;
+      opacity: .4
+    }
+
+    .placeholder-text {
+      font-size: .85rem;
+      opacity: .6
+    }
+
+    .spinner {
+      display: inline-block;
+      width: 14px;
+      height: 14px;
+      border: 2px solid rgba(255, 255, 255, .3);
+      border-top-color: #fff;
+      border-radius: 50%;
+      animation: spin .7s linear infinite;
+      margin-right: 8px;
+      vertical-align: middle
+    }
+
+    @keyframes spin {
+      to {
+        transform: rotate(360deg)
+      }
+    }
+
+    .error-msg {
+      background: rgba(231, 76, 60, .1);
+      border: 1px solid var(--red);
+      border-radius: 8px;
+      padding: 12px 16px;
+      color: var(--red);
+      font-size: .82rem
+    }
+
+    ::-webkit-scrollbar {
+      width: 4px
+    }
+
+    ::-webkit-scrollbar-track {
+      background: transparent
+    }
+
+    ::-webkit-scrollbar-thumb {
+      background: var(--border);
+      border-radius: 2px
+    }
+
+    hr.divider {
+      border-color: var(--border);
+      border-width: 1px 0 0 0
+    }
+
+    .insight-box {
+      background: rgba(46, 134, 193, .07);
+      border: 1px solid rgba(46, 134, 193, .2);
+      border-radius: 8px;
+      padding: 12px 16px
+    }
+
+    .insight-label {
+      font-size: .65rem;
+      color: var(--sky);
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      margin-bottom: 4px
+    }
+
+    .insight-text {
+      font-size: .82rem;
+      color: var(--light);
+      opacity: .85
+    }
+  </style>
+</head>
+
+<body>
+
+  <div class="header">
+    <div class="header-icon">🚗</div>
+    <div>
+      <div class="header-title">CarPrice AI — Live Inference Demo</div>
+      <div class="header-sub">Deep Learning · Used Car Price Prediction · Powered by Claude AI (R²=0.9899)</div>
+    </div>
+    <div class="badge">DNN 128→64→32</div>
+  </div>
+
+  <div class="metrics-row">
+    <div class="metric-cell">
+      <div class="metric-label">R² Score</div>
+      <div class="metric-value">0.9899</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-label">RMSE</div>
+      <div class="metric-value">$1,109</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-label">MAE</div>
+      <div class="metric-value">$651</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-label">MAPE</div>
+      <div class="metric-value">5.75%</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-label">Architecture</div>
+      <div class="metric-value">128→64→32</div>
+    </div>
+    <div class="metric-cell">
+      <div class="metric-label">Train Samples</div>
+      <div class="metric-value">2,400</div>
+    </div>
+  </div>
+
+  <div class="main">
+    <div class="panel-form">
+      <div class="panel-title">🔧 Vehicle Configuration</div>
+      <div class="form-body">
+
+        <div class="field">
+          <label>Brand</label>
+          <select id="brand">
+            <option>Toyota</option>
+            <option>BMW</option>
+            <option>Ford</option>
+            <option>Mercedes</option>
+            <option>Nissan</option>
+            <option>Chevrolet</option>
+            <option>Hyundai</option>
+            <option>Honda</option>
+            <option>Kia</option>
+            <option>Audi</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Model</label>
+          <select id="model">
+            <option>Camry</option>
+            <option>Corolla</option>
+            <option>RAV4</option>
+            <option>M3</option>
+            <option>X5</option>
+            <option>3 Series</option>
+            <option>Focus</option>
+            <option>Mustang</option>
+            <option>F-150</option>
+            <option>GLE</option>
+            <option>C-Class</option>
+            <option>E-Class</option>
+            <option>Altima</option>
+            <option>Sentra</option>
+            <option>Malibu</option>
+            <option>Silverado</option>
+            <option>Elantra</option>
+            <option>Tucson</option>
+            <option>Civic</option>
+            <option>Accord</option>
+            <option>Sportage</option>
+            <option>Soul</option>
+            <option>A4</option>
+            <option>Q5</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Manufacturing Year</label>
+          <div class="slider-wrap">
+            <input type="range" id="year" min="2005" max="2022" value="2018" oninput="sv('year','year-val',v=>v)">
+            <span class="slider-val" id="year-val">2018</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Fuel Type</label>
+          <select id="fuel">
+            <option>Petrol</option>
+            <option>Diesel</option>
+            <option>Hybrid</option>
+            <option>Electric</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Transmission</label>
+          <select id="trans">
+            <option>Automatic</option>
+            <option>Manual</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Owner Type</label>
+          <select id="owner">
+            <option>First</option>
+            <option>Second</option>
+            <option>Third</option>
+          </select>
+        </div>
+        <div class="field">
+          <label>Engine Displacement (CC)</label>
+          <div class="slider-wrap">
+            <input type="range" id="engine" min="800" max="3600" step="100" value="2000"
+              oninput="sv('engine','engine-val',v=>v+' cc')">
+            <span class="slider-val" id="engine-val">2000 cc</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>Power (BHP)</label>
+          <div class="slider-wrap">
+            <input type="range" id="power" min="60" max="205" step="1" value="150"
+              oninput="sv('power','power-val',v=>v+' BHP')">
+            <span class="slider-val" id="power-val">150 BHP</span>
+          </div>
+        </div>
+        <div class="field">
+          <label>KM Driven</label>
+          <div class="slider-wrap">
+            <input type="range" id="km" min="500" max="350000" step="1000" value="60000"
+              oninput="sv('km','km-val',v=>Number(v).toLocaleString()+' km')">
+            <span class="slider-val" id="km-val">60,000 km</span>
+          </div>
+        </div>
+        <button class="predict-btn" id="predict-btn" onclick="predict()">⚡ Predict Price</button>
+      </div>
+    </div>
+
+    <div class="panel-results" id="results-panel">
+      <div class="placeholder" id="placeholder">
+        <div class="placeholder-icon">🎯</div>
+        <div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--light);opacity:.5;">
+          Configure &amp; Predict</div>
+        <div class="placeholder-text">Configure a vehicle manually,<br>then click <strong>Predict
+            Price</strong> to see the AI's estimate.</div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    let history = [];
+    function sv(id, valId, fmt) { document.getElementById(valId).textContent = fmt(document.getElementById(id).value) }
+
+    async function predict() {
+      const btn = document.getElementById('predict-btn');
+      btn.innerHTML = '<span class="spinner"></span>Predicting...'; btn.classList.add('loading'); btn.disabled = true;
+      const brand = document.getElementById('brand').value, model = document.getElementById('model').value,
+        year = parseInt(document.getElementById('year').value), fuel = document.getElementById('fuel').value,
+        trans = document.getElementById('trans').value, owner = document.getElementById('owner').value,
+        engine = parseInt(document.getElementById('engine').value), power = parseFloat(document.getElementById('power').value),
+        km = parseInt(document.getElementById('km').value);
+      const payload = { brand, model, year, fuel, trans, owner, engine, power, km };
+
+      try {
+        const resp = await fetch('http://127.0.0.1:5000/predict', {
+          method: 'POST',
+          headers: { 'Content-Type': 'application/json' },
+          body: JSON.stringify(payload)
+        });
+        if (!resp.ok) throw new Error("Server Error " + resp.status);
+        const result = await resp.json();
+        if (result.error) throw new Error(result.error);
+        renderResult(result, { brand, model, year, fuel, trans, owner, engine, power, km });
+      } catch (e) { renderError(e.message); }
+      finally { btn.innerHTML = '⚡ Predict Price'; btn.classList.remove('loading'); btn.disabled = false; }
+    }
+
+    const SEG_COL = { Economy: '#27ae60', 'Mid-Range': '#2e86c1', Premium: '#8e44ad', Luxury: '#f39c12' };
+    const IMP_COL = { Positive: '#27ae60', Negative: '#e74c3c', Neutral: '#95a5a6' };
+
+    function renderResult(r, car) {
+      const ph = document.getElementById('placeholder');
+      if (ph) ph.style.display = 'none';
+      const price = r.predicted_price, low = r.confidence_low, high = r.confidence_high, segment = r.price_segment, factors = r.key_factors || [], note = r.model_note || '';
+      history.unshift({ car, price, segment }); if (history.length > 8) history.pop();
+      const pct = Math.min(100, Math.max(0, ((price - 1500) / (90000 - 1500)) * 100));
+      const col = SEG_COL[segment] || '#2e86c1';
+      document.getElementById('results-panel').innerHTML = `
+    <div class="price-card">
+      <div class="price-icon">💰</div>
+      <div>
+        <div class="price-label">Predicted Market Price</div>
+        <div class="price-amount" style="background:linear-gradient(90deg,#fff,${col});-webkit-background-clip:text;-webkit-text-fill-color:transparent">$${Math.round(price).toLocaleString()}</div>
+        <div class="price-sub">Confidence: $${Math.round(low).toLocaleString()} – $${Math.round(high).toLocaleString()} &nbsp;·&nbsp; ${car.brand} ${car.model} (${car.year})</div>
+      </div>
+      <div class="price-badge" style="border:1px solid ${col};color:${col};background:${col}22">${segment}<br><span style="font-size:.65rem;opacity:.7">segment</span></div>
+    </div>
+    <div class="range-card">
+      <div class="range-title">Price Position in Dataset Range ($1,500 – $90,000)</div>
+      <div class="range-bar-bg">
+        <div class="range-bar-fill" style="width:${pct}%"></div>
+        <div class="range-dot" style="left:${pct}%;border-color:${col}"></div>
+      </div>
+      <div class="range-labels">
+        <span>$1,500 (Min)</span>
+        <span style="color:${col}">▲ $${Math.round(price).toLocaleString()} (${pct.toFixed(0)}th pctile)</span>
+        <span>$90,000 (Max)</span>
+      </div>
+    </div>
+    <div class="breakdown-card">
+      <div class="breakdown-title">Key Pricing Factors (Permutation Importance)</div>
+      ${factors.map(f => `
+        <div class="factor-row">
+          <div class="factor-name" style="color:${IMP_COL[f.impact] || '#95a5a6'}">${f.factor}</div>
+          <div class="factor-bar-bg"><div class="factor-bar-fill" style="width:${f.strength}%;background:${IMP_COL[f.impact] || '#95a5a6'}44;border-right:2px solid ${IMP_COL[f.impact] || '#95a5a6'}"></div></div>
+          <div class="factor-val">${f.strength}%</div>
+        </div>
+        <div style="font-size:.68rem;color:var(--muted);margin-bottom:10px">${f.note}</div>
+      `).join('')}
+    </div>
+    <div class="insight-box">
+      <div class="insight-label">🤖 Model Insight</div>
+      <div class="insight-text">${note}</div>
+    </div>
+    <div class="history-card">
+      <div class="history-header">
+        <span>Prediction History (${history.length} vehicles)</span>
+        <button class="clear-btn" onclick="clearHist()">Clear</button>
+      </div>
+      <table>
+        <thead><tr><th>Vehicle</th><th>Year</th><th>KM Driven</th><th>Owner</th><th>Predicted Price</th><th>Segment</th></tr></thead>
+        <tbody>${history.map(h => `<tr><td>${h.car.brand} ${h.car.model}</td><td class="mono">${h.car.year}</td><td class="mono">${Number(h.car.km).toLocaleString()}</td><td>${h.car.owner}</td><td class="price-cell">$${Math.round(h.price).toLocaleString()}</td><td><span style="font-size:.7rem;padding:2px 8px;border-radius:10px;background:${(SEG_COL[h.segment] || '#2e86c1')}22;color:${SEG_COL[h.segment] || '#2e86c1'};border:1px solid ${(SEG_COL[h.segment] || '#2e86c1')}44">${h.segment}</span></td></tr>`).join('')}</tbody>
+      </table>
+    </div>`;
+    }
+
+    function renderError(msg) {
+      document.getElementById('results-panel').innerHTML = `<div class="error-msg">❌ Prediction failed: ${msg}<br><small>Make sure you're running this in a Claude artifact environment.</small></div>`;
+    }
+
+    function clearHist() {
+      history = [];
+      document.getElementById('results-panel').innerHTML = `<div class="placeholder" id="placeholder"><div class="placeholder-icon">🎯</div><div style="font-family:'Syne',sans-serif;font-size:1.1rem;font-weight:700;color:var(--light);opacity:.5">Configure &amp; Predict</div><div class="placeholder-text">History cleared. Configure a vehicle and click Predict Price.</div></div>`;
+    }
+  </script>
+</body>
+
+</html>
