@@ -3,28 +3,6 @@
 ## Project Overview
 This repository contains a complete deep learning pipeline for used car price prediction, ranging from data preprocessing and model training to evaluation and a live web application demo.
 
-## Repository Structure
-
-```text
-project/
-│
-├── data/                       # Contains dataset
-├── notebooks/                  # Jupyter notebooks for EDA and experimentation
-├── outputs/                    # Training metrics, plots, and evaluation results
-├── srs/                        # Source code for training and inference
-│   ├── config.py               # Configuration and hyperparameters
-│   ├── data_preprocessing.py   # Data cleaning and feature engineering
-│   ├── evaluate.py             # Model evaluation and metrics
-│   ├── inference.py            # Inference scripts for predictions
-│   ├── model.py                # Keras model architecture definition
-│   └── train.py                # Training loop and callbacks
-│
-├── models/                     # Saved Keras weights and preprocessors (scaler, encoders)
-├── app.py                      # Flask web server for the Live Demo
-├── CarPrice_Live_Demo.html     # Frontend UI for the Live Demo
-├── requirements.txt            # Python dependencies
-└── README.md
-```
 
 ## Installation
 
