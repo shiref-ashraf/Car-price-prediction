@@ -632,45 +632,23 @@
         <div class="field">
           <label>Brand</label>
           <select id="brand">
-            <option>Toyota</option>
-            <option>BMW</option>
-            <option>Ford</option>
-            <option>Mercedes</option>
-            <option>Nissan</option>
-            <option>Chevrolet</option>
-            <option>Hyundai</option>
-            <option>Honda</option>
-            <option>Kia</option>
-            <option>Audi</option>
+            <option value="" disabled selected>Select Brand</option>
+            <option value="Toyota">Toyota</option>
+            <option value="BMW">BMW</option>
+            <option value="Ford">Ford</option>
+            <option value="Mercedes">Mercedes</option>
+            <option value="Nissan">Nissan</option>
+            <option value="Chevrolet">Chevrolet</option>
+            <option value="Hyundai">Hyundai</option>
+            <option value="Honda">Honda</option>
+            <option value="Kia">Kia</option>
+            <option value="Audi">Audi</option>
           </select>
         </div>
         <div class="field">
           <label>Model</label>
           <select id="model">
-            <option>Camry</option>
-            <option>Corolla</option>
-            <option>RAV4</option>
-            <option>M3</option>
-            <option>X5</option>
-            <option>3 Series</option>
-            <option>Focus</option>
-            <option>Mustang</option>
-            <option>F-150</option>
-            <option>GLE</option>
-            <option>C-Class</option>
-            <option>E-Class</option>
-            <option>Altima</option>
-            <option>Sentra</option>
-            <option>Malibu</option>
-            <option>Silverado</option>
-            <option>Elantra</option>
-            <option>Tucson</option>
-            <option>Civic</option>
-            <option>Accord</option>
-            <option>Sportage</option>
-            <option>Soul</option>
-            <option>A4</option>
-            <option>Q5</option>
+            <option value="" disabled selected>Choose a brand first</option>
           </select>
         </div>
         <div class="field">
@@ -744,14 +722,48 @@
   </div>
 
   <script>
+    const BRAND_MODELS = {
+      Toyota: ['Camry', 'Corolla', 'RAV4'],
+      BMW: ['M3', 'X5', '3 Series'],
+      Ford: ['Focus', 'Mustang', 'F-150'],
+      Mercedes: ['GLE', 'C-Class', 'E-Class'],
+      Nissan: ['Altima', 'Sentra'],
+      Chevrolet: ['Malibu', 'Silverado'],
+      Hyundai: ['Elantra', 'Tucson'],
+      Honda: ['Civic', 'Accord'],
+      Kia: ['Sportage', 'Soul'],
+      Audi: ['A4', 'Q5']
+    };
+
+    document.getElementById('brand').addEventListener('change', function() {
+      const modelSelect = document.getElementById('model');
+      const models = BRAND_MODELS[this.value] || [];
+      modelSelect.innerHTML = '';
+      if (models.length === 0) {
+        modelSelect.innerHTML = '<option value="" disabled selected>Choose a brand first</option>';
+      } else {
+        models.forEach(model => {
+          const opt = document.createElement('option');
+          opt.value = model;
+          opt.textContent = model;
+          modelSelect.appendChild(opt);
+        });
+      }
+    });
+
     let history = [];
     function sv(id, valId, fmt) { document.getElementById(valId).textContent = fmt(document.getElementById(id).value) }
 
     async function predict() {
+      const brand = document.getElementById('brand').value, model = document.getElementById('model').value;
+      if (!brand || !model) {
+        renderError("Please select both a brand and a model.");
+        return;
+      }
+      
       const btn = document.getElementById('predict-btn');
       btn.innerHTML = '<span class="spinner"></span>Predicting...'; btn.classList.add('loading'); btn.disabled = true;
-      const brand = document.getElementById('brand').value, model = document.getElementById('model').value,
-        year = parseInt(document.getElementById('year').value), fuel = document.getElementById('fuel').value,
+      const year = parseInt(document.getElementById('year').value), fuel = document.getElementById('fuel').value,
         trans = document.getElementById('trans').value, owner = document.getElementById('owner').value,
         engine = parseInt(document.getElementById('engine').value), power = parseFloat(document.getElementById('power').value),
         km = parseInt(document.getElementById('km').value);
