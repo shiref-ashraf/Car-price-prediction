@@ -592,7 +592,6 @@
     <div class="header-icon">🚗</div>
     <div>
       <div class="header-title">CarPrice AI — Live Inference Demo</div>
-      <div class="header-sub">Deep Learning · Used Car Price Prediction · Powered by Claude AI (R²=0.9899)</div>
     </div>
     <div class="badge">DNN 128→64→32</div>
   </div>
@@ -735,7 +734,7 @@
       Audi: ['A4', 'Q5']
     };
 
-    document.getElementById('brand').addEventListener('change', function() {
+    document.getElementById('brand').addEventListener('change', function () {
       const modelSelect = document.getElementById('model');
       const models = BRAND_MODELS[this.value] || [];
       modelSelect.innerHTML = '';
@@ -760,7 +759,7 @@
         renderError("Please select both a brand and a model.");
         return;
       }
-      
+
       const btn = document.getElementById('predict-btn');
       btn.innerHTML = '<span class="spinner"></span>Predicting...'; btn.classList.add('loading'); btn.disabled = true;
       const year = parseInt(document.getElementById('year').value), fuel = document.getElementById('fuel').value,
@@ -843,7 +842,7 @@
     }
 
     function renderError(msg) {
-      document.getElementById('results-panel').innerHTML = `<div class="error-msg">❌ Prediction failed: ${msg}<br><small>Make sure you're running this in a Claude artifact environment.</small></div>`;
+      document.getElementById('results-panel').innerHTML = `<div class="error-msg">❌ Prediction failed</div>`;
     }
 
     function clearHist() {
